@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                       Int           @id @default(autoincrement())
+  email                    String        @unique
+  username                 String?
+  externalAuthAssociations SocialLogin[]
+  auth                     Auth?
+}
+
+model SocialLogin {
+  id         String   @id @default(uuid())
+  provider   String
+  providerId String
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model Auth {
+  id         String         @id @default(uuid())
+  userId     Int?           @unique
+  user       User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  identities AuthIdentity[]
+  sessions   Session[]
+}
+
+model AuthIdentity {
+  providerName   String
+  providerUserId String
+  providerData   String @default("{}")
+  authId         String
+  auth           Auth   @relation(fields: [authId], references: [id], onDelete: Cascade)
+
+  @@id([providerName, providerUserId])
+}
+
+model Session {
+  id        String   @id @unique
+  expiresAt DateTime
+  userId    String
+  auth      Auth     @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@index([userId])
+}
