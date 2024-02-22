@@ -9,7 +9,5 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+dropdb demo-wasp-schema && bun prisma migrate dev > /dev/null && time bun dummy.ts && time node build.mjs transaction
 ```
-
-This project was created using `bun init` in bun v1.0.28. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
